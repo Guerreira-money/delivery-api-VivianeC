@@ -1,72 +1,92 @@
 package com.deliverytech.delivery_api.service;
 
-import com.deliverytech.delivery_api.dto.CriarPedidoDTO;
-import com.deliverytech.delivery_api.entity.*;
-import com.deliverytech.delivery_api.repository.*;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+
+import com.deliverytech.delivery_api.entity.PedidoDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.deliverytech.delivery_api.entity.Cliente;
+import com.deliverytech.delivery_api.entity.Pedido;
+import com.deliverytech.delivery_api.entity.Restaurante;
+import com.deliverytech.delivery_api.enums.StatusPedido;
+import com.deliverytech.delivery_api.repository.ClienteRepository;
+import com.deliverytech.delivery_api.repository.PedidoRepository;
+import com.deliverytech.delivery_api.repository.ProdutoRepository;
+import com.deliverytech.delivery_api.repository.RestauranteRepository;
+
+import lombok.RequiredArgsConstructor;
+
 
 @Service
 @RequiredArgsConstructor
 public class PedidoService {
 
-    private final PedidoRepository pedidoRepository;
-    private final ClienteRepository clienteRepository;
-    private final RestauranteRepository restauranteRepository;
-    private final ProdutoRepository produtoRepository;
+    @Autowired
+    private PedidoRepository pedidoRepository;
 
-    public List<Pedido> listar() {
-        return pedidoRepository.findAll();
-    }
+    @Autowired
+    private ClienteRepository clienteRepository;
 
-    public Pedido buscarPorUuid(String uuid) {
-        return pedidoRepository.findByUuid(uuid)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
-    }
+    @Autowired
+    private RestauranteRepository restauranteRepository;
 
-    @Transactional
-    public Pedido criar(CriarPedidoDTO dto) {
-        var cliente = clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new IllegalArgumentException("Cliente inválido"));
-        var restaurante = restauranteRepository.findById(dto.getRestauranteId())
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante inválido"));
+    @Autowired
+    private ProdutoRepository produtoRepository;
 
-        var pedido = Pedido.builder()
-                .cliente(cliente)
-                .restaurante(restaurante)
-                .build();
+    /**
+     * Criar novo pedido
+     */
+    public Pedido criarPedido(PedidoDTO dto) {
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + dto.getClienteId()));
 
-        dto.getItens().forEach(i -> {
-            var produto = produtoRepository.findById(i.getProdutoId())
-                    .orElseThrow(() -> new IllegalArgumentException("Produto inválido: " + i.getProdutoId()));
+        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
+            .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + dto.getRestauranteId()));
 
-            var item = PedidoItem.builder()
-                    .produto(produto)
-                    .quantidade(i.getQuantidade() == null ? 1 : i.getQuantidade())
-                    .precoUnitario(produto.getPreco()) // congela o preço do momento
-                    .build();
+        if (!cliente.getAtivo()) {
+            throw new IllegalArgumentException("Cliente inativo não pode fazer pedidos");
+        }
 
-            pedido.adicionarItem(item);
-        });
+        if (!restaurante.getAtivo()) {
+            throw new IllegalArgumentException("Restaurante não está disponível");
+        }
 
-        // PrePersist calcula total/subtotais
+        Pedido pedido = new Pedido();
+        pedido.setClienteId(cliente.getId());
+        pedido.setRestaurante(restaurante);
+        pedido.setStatus(StatusPedido.PENDENTE.name());
+        pedido.setDataPedido(dto.getDataPedido());
+        pedido.setNumeroPedido(dto.getNumeroPedido());
+        pedido.setValorTotal(dto.getValorTotal());
+        pedido.setObservacoes(dto.getObservacoes());
+        pedido.setItens(dto.getItens());
+
         return pedidoRepository.save(pedido);
     }
 
-    @Transactional
-    public Pedido atualizarStatus(String uuid, Pedido.Status novoStatus) {
-        var pedido = buscarPorUuid(uuid);
-        pedido.setStatus(novoStatus);
-        return pedidoRepository.save(pedido);
+    /**
+     * Listar pedidos por cliente
+     */
+    @Transactional(readOnly = true)
+    public List<Pedido> listarPorCliente(Long clienteId) {
+        return pedidoRepository.findByClienteIdOrderByDataPedidoDesc(clienteId);
     }
 
-    @Transactional
-    public void cancelar(String uuid) {
-        var pedido = buscarPorUuid(uuid);
-        pedido.setStatus(Pedido.Status.CANCELADO);
-        pedidoRepository.save(pedido);
+    /**
+     * Atualizar status do pedido
+     */
+    public Pedido atualizarStatus(Long pedidoId, StatusPedido status) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+            .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + pedidoId));
+
+        if (pedido.getStatus().equals(StatusPedido.ENTREGUE.name())) {
+            throw new IllegalArgumentException("Pedido já finalizado: " + pedidoId);
+        }
+
+        pedido.setStatus(status.name());
+        return pedidoRepository.save(pedido);
     }
+    
 }

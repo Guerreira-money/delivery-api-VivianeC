@@ -1,40 +1,50 @@
 package com.deliverytech.delivery_api.controllers;
 
-import com.deliverytech.delivery_api.entity.*;
-import com.deliverytech.delivery_api.service.*;
+import java.util.List;
+import java.util.Optional;
 
-
+import com.deliverytech.delivery_api.dto.ClienteResponseDTO;
+import com.deliverytech.delivery_api.dto.ClienteRequestDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
+import com.deliverytech.delivery_api.entity.Cliente;
+import com.deliverytech.delivery_api.service.ClienteService;
 
 @RestController
 @RequestMapping("/clientes")
 @CrossOrigin(origins = "*")
 public class ClienteController {
-    @Autowired
+    
+   @Autowired
     private ClienteService clienteService;
 
     /**
      * Cadastrar novo cliente
      */
     @PostMapping
-    public ResponseEntity<?> cadastrar(@Validated @RequestBody Cliente cliente) {
+    public ResponseEntity<?> cadastrar(@Valid @RequestBody ClienteRequestDTO cliente) {
         try {
-            Cliente clienteSalvo = clienteService.cadastrar(cliente);
+            ClienteResponseDTO clienteSalvo = clienteService.cadastrar(cliente);
             return ResponseEntity.status(HttpStatus.CREATED).body(clienteSalvo);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno do servidor");
+                .body("Erro interno do servidor");
         }
     }
 
@@ -66,7 +76,7 @@ public class ClienteController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id,
-                                       @Validated @RequestBody Cliente cliente) {
+                                      @Validated @RequestBody Cliente cliente) {
         try {
             Cliente clienteAtualizado = clienteService.atualizar(id, cliente);
             return ResponseEntity.ok(clienteAtualizado);
@@ -74,7 +84,7 @@ public class ClienteController {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno do servidor");
+                .body("Erro interno do servidor");
         }
     }
 
@@ -90,7 +100,7 @@ public class ClienteController {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno do servidor");
+                .body("Erro interno do servidor");
         }
     }
 

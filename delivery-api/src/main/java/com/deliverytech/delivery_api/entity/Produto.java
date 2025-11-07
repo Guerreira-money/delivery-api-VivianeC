@@ -5,43 +5,31 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "produtos")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@Data @NoArgsConstructor @AllArgsConstructor
 public class Produto {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, updatable = false)
-    private String uuid;
-
-    @Column(nullable = false)
+        
     private String nome;
 
-    @Column(nullable = false, scale = 2, precision = 12)
+    
     private BigDecimal preco;
 
     private String descricao;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurante_id")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Restaurante restaurante;
+    private String categoria;
+    private Long restauranteId;
 
-    @Column(nullable = false)
-    private Boolean ativo;
+    
+    private Boolean disponivel;
 
-    @Column(name = "data_cadastro", nullable = false)
+    
     private LocalDateTime dataCadastro;
 
-    @PrePersist
-    public void prePersist() {
-        this.uuid = UUID.randomUUID().toString();
-        this.ativo = (this.ativo == null) ? true : this.ativo;
-        this.dataCadastro = LocalDateTime.now();
-    }
 }

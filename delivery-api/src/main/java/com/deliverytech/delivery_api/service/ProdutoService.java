@@ -3,57 +3,113 @@ package com.deliverytech.delivery_api.service;
 
 import com.deliverytech.delivery_api.entity.*;
 import com.deliverytech.delivery_api.repository.*;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class ProdutoService {
 
-    private final ProdutoRepository produtoRepo;
-    private final RestauranteRepository restauranteRepo;
+      @Autowired
+    private ProdutoRepository produtoRepository;
 
-    public ProdutoService(ProdutoRepository produtoRepo, RestauranteRepository restauranteRepo) {
-        this.produtoRepo = produtoRepo;
-        this.restauranteRepo = restauranteRepo;
+    @Autowired
+    private RestauranteRepository restauranteRepository;
+
+    /**
+     * Cadastrar novo produto
+     */
+    public Produto cadastrar(Produto produto) {
+
+        produto.setRestauranteId(produto.getRestauranteId());
+        produto.setDisponivel(produto.getDisponivel());
+
+        return produtoRepository.save(produto);
     }
+    /**
+     * Listar todos os produtos
+     */
+    public List<ProdutoDTO> listarTodos() {
+        List<Produto> produtos = produtoRepository.findAll();
+        List<ProdutoDTO> produtosDTO = new ArrayList<>();
 
+        for (Produto produto : produtos) {
+            ProdutoDTO dto = new ProdutoDTO(produto.getId(), produto.getNome(), produto.getDescricao(),
+                    produto.getPreco(), produto.getCategoria(), produto.getDisponivel());
+            produtosDTO.add(dto);
+        }
+
+        return produtosDTO;
+    }
+    /**
+     * Buscar produto por ID
+     */
+    public Produto buscarPorId(Long id) {
+        return produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
+    }
+    /**
+     * Atualizar produto
+     */
     @Transactional
-    public Produto cadastrar(Produto p, Long restauranteId) {
-        Restaurante r = restauranteRepo.findById(restauranteId)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado"));
-        p.setRestaurante(r);
-        if (p.getPreco() == null || p.getPreco().compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Preço inválido");
-        p.setAtivo(true);
-        return produtoRepo.save(p);
-    }
+    public Produto atualizar(Long id, Produto produtoAtualizado) {
+        Produto produtoExistente = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
 
-    public List<Produto> listar() {
-        return produtoRepo.findByAtivoTrue();
-    }
+        validarDadosProduto(produtoAtualizado);
 
-    public List<Produto> listarPorRestaurante(Long restauranteId) {
-        Restaurante r = restauranteRepo.findById(restauranteId)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado"));
-        return produtoRepo.findByRestauranteAndAtivoTrue(r);
-    }
+        produtoExistente.setNome(produtoAtualizado.getNome());
+        produtoExistente.setDescricao(produtoAtualizado.getDescricao());
+        produtoExistente.setPreco(produtoAtualizado.getPreco());
+        produtoExistente.setCategoria(produtoAtualizado.getCategoria());
+        produtoExistente.setDisponivel(produtoAtualizado.getDisponivel());
 
+        return produtoRepository.save(produtoExistente);
+    }
+    /**
+     * Excluir produto
+     */
     @Transactional
-    public Produto atualizar(Long id, Produto data) {
-        Produto p = produtoRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
-        if (data.getNome() != null) p.setNome(data.getNome());
-        if (data.getDescricao() != null) p.setDescricao(data.getDescricao());
-        if (data.getPreco() != null) p.setPreco(data.getPreco());
-        return produtoRepo.save(p);
+    public void excluir(Long id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
+
+        produtoRepository.delete(produto);
     }
 
-    @Transactional
-    public void inativar(Long id) {
-        Produto p = produtoRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
-        p.setAtivo(false);
-        produtoRepo.save(p);
+    private void validarDadosProduto(Produto produto) {
+        if (produto.getNome() == null || produto.getNome().isEmpty()) {
+            throw new IllegalArgumentException("Nome do produto é obrigatório");
+        }
+        if (produto.getDescricao() == null || produto.getDescricao().isEmpty()) {
+            throw new IllegalArgumentException("Descrição do produto é obrigatória");
+        }
+        if (produto.getPreco() == null || produto.getPreco().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Preço do produto deve ser maior que zero");
+        }
+        if (produto.getCategoria() == null || produto.getCategoria().isEmpty()) {
+            throw new IllegalArgumentException("Categoria do produto é obrigatória");
+        }
+    }
+    // buscar produtos por restaurante
+    public List<Produto> buscarPorRestaurante(Long restauranteId) {
+        return produtoRepository.findByRestauranteId(restauranteId);
+    }
+
+    public Produto inativar(Long id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
+
+        if (!produto.getDisponivel()) {
+            throw new IllegalArgumentException("Produto já está inativo: " + id);
+        }
+
+        produto.setDisponivel(false);
+        return produtoRepository.save(produto);
     }
 }

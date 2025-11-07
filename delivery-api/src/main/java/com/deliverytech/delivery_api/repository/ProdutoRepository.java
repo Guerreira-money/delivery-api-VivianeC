@@ -2,12 +2,13 @@ package com.deliverytech.delivery_api.repository;
 
 
 import com.deliverytech.delivery_api.entity.Produto;
-import com.deliverytech.delivery_api.entity.Restaurante;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.*;
 
+@Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
-    List<Produto> findByAtivoTrue();
-    List<Produto> findByRestauranteAndAtivoTrue(Restaurante restaurante);
-    List<Produto> findByNomeContainingIgnoreCaseAndAtivoTrue(String nome);
+     // buscar produto por restaurante ID
+     List<Produto> findByRestauranteId(Long restauranteId);
 }
