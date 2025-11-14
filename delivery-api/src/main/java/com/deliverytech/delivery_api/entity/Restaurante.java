@@ -10,7 +10,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "restaurantes")
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data 
+@NoArgsConstructor
+@AllArgsConstructor
 
 public class Restaurante {
     @Id

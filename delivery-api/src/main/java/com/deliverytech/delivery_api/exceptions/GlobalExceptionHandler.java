@@ -10,8 +10,10 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class GlobalExceptionHandler {
-      @ExceptionHandler(EntityNotFoundException.class)
+
+    @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ValidationErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
         ValidationErrorResponse error = new ValidationErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
@@ -64,4 +66,5 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
 }

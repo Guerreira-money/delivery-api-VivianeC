@@ -1,4 +1,4 @@
-package com.deliverytech.delivery_api.dto;
+package com.deliverytech.delivery_api.dto.response;
 
 import com.deliverytech.delivery_api.entity.Cliente;
 import lombok.Data;
@@ -17,6 +17,8 @@ public class ClienteResponseDTO {
     private String endereco;
 
     private Boolean ativo;
+    
+/*  Apaguei para ficar de acordo com o código do professor
 
     public ClienteResponseDTO(Cliente save) {
         this.id = save.getId();
@@ -26,4 +28,5 @@ public class ClienteResponseDTO {
         this.endereco = save.getEndereco();
         this.ativo = save.getAtivo();
     }
+        */
 }

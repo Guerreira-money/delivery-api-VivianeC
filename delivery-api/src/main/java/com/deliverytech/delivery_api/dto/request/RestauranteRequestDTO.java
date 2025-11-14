@@ -1,11 +1,15 @@
-package com.deliverytech.delivery_api.entity;
-import lombok.*;
+package com.deliverytech.delivery_api.dto.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RestauranteDTO {
+public class RestauranteRequestDTO {
     
     private Long id;
     private String nome;

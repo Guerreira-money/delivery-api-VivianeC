@@ -1,35 +1,20 @@
-
-package com.deliverytech.delivery_api.entity;
-
-import jakarta.persistence.*;
-import lombok.Data;
+package com.deliverytech.delivery_api.dto.response;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.math.BigDecimal;
-import java.util.List;
 
-@Entity
-@Table(name = "produtos")
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class Produto {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ProdutoResponseDTO {
+   
     private Long id;
-
     private String nome;
-
     private String descricao;
-
     private BigDecimal preco;
-
     private String categoria;
-
     private Boolean disponivel;
-
-    private Long restauranteId;
-
 }

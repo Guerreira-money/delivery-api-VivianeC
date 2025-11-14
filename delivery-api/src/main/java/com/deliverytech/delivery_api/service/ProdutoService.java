@@ -1,8 +1,8 @@
 package com.deliverytech.delivery_api.service;
-
-
-import com.deliverytech.delivery_api.entity.*;
-import com.deliverytech.delivery_api.repository.*;
+import com.deliverytech.delivery_api.repository.RestauranteRepository;
+import com.deliverytech.delivery_api.dto.request.ProdutoRequestDTO;
+import com.deliverytech.delivery_api.entity.Produto;
+import com.deliverytech.delivery_api.repository.ProdutoRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,8 @@ import java.util.List;
 @Service
 public class ProdutoService {
 
-      @Autowired
+    
+    @Autowired
     private ProdutoRepository produtoRepository;
 
     @Autowired
@@ -31,21 +32,23 @@ public class ProdutoService {
 
         return produtoRepository.save(produto);
     }
+
     /**
      * Listar todos os produtos
      */
-    public List<ProdutoDTO> listarTodos() {
+    public List<ProdutoRequestDTO> listarTodos() {
         List<Produto> produtos = produtoRepository.findAll();
-        List<ProdutoDTO> produtosDTO = new ArrayList<>();
+        List<ProdutoRequestDTO> produtosDTO = new ArrayList<>();
 
         for (Produto produto : produtos) {
-            ProdutoDTO dto = new ProdutoDTO(produto.getId(), produto.getNome(), produto.getDescricao(),
+            ProdutoRequestDTO dto = new ProdutoRequestDTO(produto.getId(), produto.getNome(), produto.getDescricao(),
                     produto.getPreco(), produto.getCategoria(), produto.getDisponivel());
             produtosDTO.add(dto);
         }
 
         return produtosDTO;
     }
+
     /**
      * Buscar produto por ID
      */
@@ -53,6 +56,7 @@ public class ProdutoService {
         return produtoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
     }
+
     /**
      * Atualizar produto
      */
@@ -71,9 +75,9 @@ public class ProdutoService {
 
         return produtoRepository.save(produtoExistente);
     }
-    /**
-     * Excluir produto
-     */
+
+    // Excluir produto
+
     @Transactional
     public void excluir(Long id) {
         Produto produto = produtoRepository.findById(id)
@@ -96,6 +100,7 @@ public class ProdutoService {
             throw new IllegalArgumentException("Categoria do produto é obrigatória");
         }
     }
+
     // buscar produtos por restaurante
     public List<Produto> buscarPorRestaurante(Long restauranteId) {
         return produtoRepository.findByRestauranteId(restauranteId);
@@ -111,5 +116,20 @@ public class ProdutoService {
 
         produto.setDisponivel(false);
         return produtoRepository.save(produto);
+    }
+
+    // Apenas produtos disponíveis
+    public List<Produto> buscarDisponiveis() {
+        return produtoRepository.findByDisponivelTrue();
+    }
+
+    // Produtos por categoria
+    public List<Produto> buscarPorCategoria(String categoria) {
+        return produtoRepository.findByCategoria(categoria);
+    }
+
+    // Produtos por faixa de preço (menor ou igual)
+    public List<Produto> buscarPorFaixaDePreco(BigDecimal preco) {
+        return produtoRepository.findByPrecoLessThanEqual(preco);
     }
 }
