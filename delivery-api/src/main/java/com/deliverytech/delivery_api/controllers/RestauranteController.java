@@ -7,14 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.deliverytech.delivery_api.service.RestauranteService;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.deliverytech.delivery_api.dto.request.RestauranteRequestDTO;
 import com.deliverytech.delivery_api.projection.RelatorioVendas;
 import java.util.Optional;
 import java.math.BigDecimal;
 import java.util.List;
-import lombok.*;
 
 @RestController
 @RequestMapping("/restaurantes")

@@ -1,6 +1,8 @@
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
+.mvnw
+mvnw.cmd
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -29,6 +31,14 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+
+###Dependências
+
+
+
 ### VS Code ###
 .vscode/
 ../.vscode/
+##Git
+.gitignore
+gitattributes
